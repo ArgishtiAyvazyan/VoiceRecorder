@@ -47,6 +47,8 @@ namespace VoiceRecorder.Model
 
         /// <summary>
         /// Pauses Recording.
+        ///
+        /// Throw Exception if there is a problem during recording.
         /// </summary>
         void PauseRecording();
 
