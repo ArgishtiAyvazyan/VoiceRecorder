@@ -36,6 +36,11 @@ namespace VoiceRecorder.AudioEngine
         private WaveOut WaveOut { get; set; }
         private EPlayStatus PlayStatus { get; set; }
 
+        public MP3Player()
+        {
+            PlayStatus = EPlayStatus.Stopped;
+        }
+
         /// <summary>
         /// Starts or resume playback.
         ///

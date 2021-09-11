@@ -1,0 +1,70 @@
+﻿<Window x:Class="VoiceRecorder.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:VoiceRecorder"
+        xmlns:viewModel="clr-namespace:VoiceRecorder.ViewModel"
+        mc:Ignorable="d"
+        Title="Audio recorder"
+        Height="120" Width="205"
+        ResizeMode="NoResize">
+    <Window.DataContext>
+        <viewModel:MainWindowViewModel />
+    </Window.DataContext>
+    <Grid>
+        <ComboBox HorizontalAlignment="Left"
+                  VerticalAlignment="Top"
+                  Width="170"
+                  Height="25"
+                  Margin="10,45,0,0"
+                  ItemsSource="{Binding Path=Devices}"
+                  SelectedItem="{Binding Path=SelectedDevice}"
+                  IsSynchronizedWithCurrentItem="True"
+                  DisplayMemberPath="Name"/>
+
+        <Button Height="25"  Width="50" HorizontalAlignment="Left" Margin="10,10,0,0" Name="StartPauseRecording" VerticalAlignment="Top" Command="{Binding StartPauseRecordingCommand}" CommandParameter="{Binding ElementName=StartPauseRecordingButtonImage, Path=Source}" >
+            <Image Name="StartPauseRecordingButtonImage" RenderTransformOrigin="-4.696,-2.239">
+                <Image.Style>
+                    <Style TargetType="{x:Type Image}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsRecording}" Value="True">
+                                <Setter Property="Source" Value="Assets/Pause.png" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding IsRecording}" Value="False">
+                                <Setter Property="Source" Value="Assets/Record.png" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Image.Style>
+            </Image>
+        </Button>
+
+        <Button Height="25"  Width="50" HorizontalAlignment="Left" Margin="70,10,0,0" Name="ButtonPlay" VerticalAlignment="Top" Command="{Binding PlayPauseCommand}" CommandParameter="{Binding ElementName=PlayPauseButtonImage, Path=Source}" >
+            <Image Name="PlayPauseButtonImage">
+                <Image.Style>
+                    <Style TargetType="{x:Type Image}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsPlaying}" Value="True">
+                                <Setter Property="Source" Value="Assets/Pause.png" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding IsPlaying}" Value="False">
+                                <Setter Property="Source" Value="Assets/Play.png" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Image.Style>
+            </Image>
+        </Button>
+
+        <Button Height="25"  Width="50" HorizontalAlignment="Left" Margin="130,10,0,0" Name="ButtonStop" VerticalAlignment="Top" Command="{Binding StopCommand}" CommandParameter="{Binding ElementName=StopButtonImage, Path=Source}" >
+            <Image Name="StopButtonImage">
+                <Image.Style>
+                    <Style TargetType="{x:Type Image}">
+                        <Setter Property="Source" Value="Assets/Stop.png" />
+                    </Style>
+                </Image.Style>
+            </Image>
+        </Button>
+    </Grid>
+</Window>
