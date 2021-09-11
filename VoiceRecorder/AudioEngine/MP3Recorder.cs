@@ -45,7 +45,7 @@ namespace VoiceRecorder.AudioEngine
         /// </summary>
         private enum ERecordingStatus
         {
-            Recording,
+            Recording = 0,
             Stopped,
             Paused,
 
@@ -141,7 +141,7 @@ namespace VoiceRecorder.AudioEngine
         }
 
         /// <summary>
-        /// Initialises the recorder for starting record.
+        /// Initializes the recorder for starting record.
         /// </summary>
         private void InitRecorder()
         {
