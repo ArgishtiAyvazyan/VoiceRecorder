@@ -90,6 +90,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="AudioEngine\MP3PlayerImpl\InternalData.cs" />
+    <Compile Include="AudioEngine\MP3PlayerImpl\MP3PlayerStates.cs" />
     <Compile Include="AudioEngine\MP3RecorderImpl\InternalData.cs" />
     <Compile Include="AudioEngine\MP3RecorderImpl\Microphone.cs" />
     <Compile Include="AudioEngine\MP3RecorderImpl\MP3RecorderStates.cs" />

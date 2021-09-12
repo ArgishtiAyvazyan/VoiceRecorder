@@ -1,5 +1,5 @@
 ﻿using System;
-using NAudio.Wave;
+using VoiceRecorder.AudioEngine.MP3PlayerImpl;
 using VoiceRecorder.Model;
 
 namespace VoiceRecorder.AudioEngine
@@ -12,33 +12,45 @@ namespace VoiceRecorder.AudioEngine
     // ReSharper disable once InconsistentNaming
     public class MP3Player : IPlayer
     {
-        /// <summary>
-        /// The enum EPlayStatus describes the player status.
-        /// </summary>
-        private enum EPlayStatus
-        {
-            Playing,
-            Stopped,
-            Paused,
-        };
+        private readonly PlayingState _playingState;
+        private readonly PausedState _pausedState;
+        private readonly StoppedState _stoppedState;
+
+        private AMP3PlayerState _activeState;
+
+        private readonly InternalData _data;
+
 
         /// <summary>
         /// The file name, which will be played.
         /// </summary>
-        public string FileName { set; get; }
+        public string FileName
+        {
+            get => _data.FileName;
+            set => _data.FileName = value;
+        }
 
         /// <summary>
         /// Event Playing Stopped, the listeners will be invoked when playing finished.
         /// </summary>
         public event EventHandler<EventData> PlayingStoppedEvent;
 
-        private Mp3FileReader Reader { get; set; }
-        private WaveOut WaveOut { get; set; }
-        private EPlayStatus PlayStatus { get; set; }
 
         public MP3Player()
         {
-            PlayStatus = EPlayStatus.Stopped;
+            _data = new InternalData();
+
+            _playingState = new PlayingState(_data);
+            _pausedState = new PausedState(_data);
+            _stoppedState = new StoppedState(_data);
+
+            _activeState = _stoppedState;
+
+            _data.PlayingStoppedEvent += (owner, args)
+                =>
+            {
+                PlayingStoppedEvent?.Invoke(owner, args);
+            };
         }
 
         /// <summary>
@@ -48,21 +60,14 @@ namespace VoiceRecorder.AudioEngine
         /// </summary>
         public void Play()
         {
-            switch (PlayStatus)
+            _activeState.Play();
+            _activeState = _playingState;
+            _data.PlayingStoppedEvent += ((sender, data)
+                =>
             {
-                case EPlayStatus.Playing:
-                    throw new InvalidOperationException("ERROR: The Playing is already started.");
-                case EPlayStatus.Stopped:
-                    InitPlayer();
-                    break;
-                case EPlayStatus.Paused:
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-
-            PlayStatus = EPlayStatus.Playing;
-            WaveOut.Play();
+                _activeState.Stop();
+                _activeState = _stoppedState;
+            });
         }
 
         /// <summary>
@@ -70,8 +75,8 @@ namespace VoiceRecorder.AudioEngine
         /// </summary>
         public void Pause()
         {
-            PlayStatus = EPlayStatus.Paused;
-            WaveOut.Pause();
+            _activeState.Pause();
+            _activeState = _pausedState;
         }
 
         /// <summary>
@@ -79,12 +84,8 @@ namespace VoiceRecorder.AudioEngine
         /// </summary>
         public void Stop()
         {
-            PlayStatus = EPlayStatus.Stopped;
-            WaveOut.Stop();
-            WaveOut.Dispose();
-            WaveOut = null;
-            Reader.Close();
-            Reader = null;
+            _activeState.Stop();
+            _activeState = _stoppedState;
         }
 
         /// <summary>
@@ -93,29 +94,7 @@ namespace VoiceRecorder.AudioEngine
         /// <returns>True if the player now in playing or paused states, otherwise False.</returns>
         public bool IsActive()
         {
-            return PlayStatus != EPlayStatus.Stopped;
-        }
-
-        /// <summary>
-        /// Initializes the player for starting playing.
-        /// </summary>
-        private void InitPlayer()
-        {
-            Reader = new Mp3FileReader(FileName);
-            WaveOut = new WaveOut();
-            WaveOut.Init(Reader);
-            WaveOut.PlaybackStopped += PlaybackStoppedHandler;
-        }
-
-        /// <summary>
-        /// Handles the finish playing event.
-        /// </summary>
-        /// <param name="sender">The Event owner.</param>
-        /// <param name="e">Event args.</param>
-        private void PlaybackStoppedHandler(object sender, StoppedEventArgs e)
-        {
-            Stop();
-            PlayingStoppedEvent?.Invoke(this, new EventData());
+            return _activeState.IsActive();
         }
     }
 }

@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using VoiceRecorder.Model;
 using NAudio.CoreAudioApi;
-using NAudio.Lame;
-using NAudio.Wave;
 using VoiceRecorder.AudioEngine.MP3RecorderImpl;
 
 namespace VoiceRecorder.AudioEngine
