@@ -4,6 +4,7 @@ using VoiceRecorder.Model;
 using NAudio.CoreAudioApi;
 using NAudio.Lame;
 using NAudio.Wave;
+using VoiceRecorder.AudioEngine.MP3RecorderImpl;
 
 namespace VoiceRecorder.AudioEngine
 {
@@ -15,63 +16,51 @@ namespace VoiceRecorder.AudioEngine
     // ReSharper disable once InconsistentNaming
     public class MP3Recorder : IRecorder
     {
-        /// <summary>
-        /// The class Microphone is an adapter on MMDevice.
-        /// </summary>
-        private class Microphone : IDevice
-        {
-            public Microphone(MMDevice device)
-            {
-                Device = device;
-            }
+        private readonly RecordingState _recordingState;
+        private readonly PausedState _pausedState;
+        private readonly StoppedState _stoppedState;
 
-            /// <summary>
-            /// The audio device name.
-            /// </summary>
-            public string Name
-            {
-                get => Device.FriendlyName;
-                set => throw new NotImplementedException();
-            }
+        private AMP3RecorderState _activeState;
 
-            /// <summary>
-            /// The nested device.
-            /// </summary>
-            public MMDevice Device { get; private set; }
-        }
-
-        /// <summary>
-        /// The enum ERecordingStatus describes the recorder status.
-        /// </summary>
-        private enum ERecordingStatus
-        {
-            Recording = 0,
-            Stopped,
-            Paused,
-        };
+        private readonly InternalData _data;
 
         /// <summary>
         /// The output file name.
         /// </summary>
-        public string OutFileName { get; set; }
+        public string OutFileName
+        {
+            get => _data.OutFileName;
+            set => _data.OutFileName = value;
+        }
 
         /// <summary>
         /// The list of available devices (Microphones).
         /// </summary>
-        public List<IDevice> Devices { get; private set; }
+        public List<IDevice> Devices
+        {
+            get => _data.Devices;
+            set => _data.Devices = value;
+        }
 
         /// <summary>
         /// The active device will be used for audio recording.
         /// </summary>
-        public IDevice ActiveDevice { get; set; }
+        public IDevice ActiveDevice
+        {
+            get => _data.ActiveDevice;
+            set => _data.ActiveDevice = value;
+        }
 
-        private LameMP3FileWriter Writer { get; set; }
-        private IWaveIn WaveIn { get; set; }
-        private ERecordingStatus RecordingStatus { get; set; }
 
         public MP3Recorder()
         {
-            RecordingStatus = ERecordingStatus.Stopped;
+            _data = new InternalData();
+
+            _recordingState = new RecordingState(_data);
+            _pausedState    = new PausedState(_data);
+            _stoppedState   = new StoppedState(_data);
+
+            _activeState = _stoppedState;
 
             CollectMicrophones();
             SelectDefaultDevice();
@@ -84,21 +73,8 @@ namespace VoiceRecorder.AudioEngine
         /// </summary>
         public void StartRecording()
         {
-            switch (RecordingStatus)
-            {
-                case ERecordingStatus.Recording:
-                    throw new InvalidOperationException("ERROR: The recording is already started.");
-                case ERecordingStatus.Stopped:
-                    InitRecorder();
-                    break;
-                case ERecordingStatus.Paused:
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-
-            RecordingStatus = ERecordingStatus.Recording;
-            WaveIn.StartRecording();
+            _activeState.StartRecording();
+            _activeState = _recordingState;
         }
 
         /// <summary>
@@ -108,8 +84,8 @@ namespace VoiceRecorder.AudioEngine
         /// </summary>
         public void PauseRecording()
         {
-            RecordingStatus = ERecordingStatus.Paused;
-            WaveIn.StopRecording();
+            _activeState.PauseRecording();
+            _activeState = _pausedState;
         }
 
         /// <summary>
@@ -120,14 +96,8 @@ namespace VoiceRecorder.AudioEngine
         /// </summary>
         public void StopRecording()
         {
-            if (RecordingStatus == ERecordingStatus.Stopped)
-            {
-                throw new InvalidOperationException("ERROR: The recording is already Stopped.");
-            }
-
-            RecordingStatus = ERecordingStatus.Stopped;
-            WaveIn.StopRecording();
-            Dispose();
+            _activeState.StopRecording();
+            _activeState = _stoppedState;
         }
 
         /// <summary>
@@ -136,62 +106,7 @@ namespace VoiceRecorder.AudioEngine
         /// <returns>True if the recorder is now in recording or paused states, otherwise False.</returns>
         public bool IsActive()
         {
-            return RecordingStatus != ERecordingStatus.Stopped;
-        }
-
-        /// <summary>
-        /// Initializes the recorder for starting record.
-        /// </summary>
-        private void InitRecorder()
-        {
-            WaveIn = new WasapiCapture(((Microphone)ActiveDevice).Device);
-
-            Writer = new LameMP3FileWriter(OutFileName, WaveIn.WaveFormat, 128);
-
-            WaveIn.DataAvailable += AvailableDataHandler;
-            WaveIn.RecordingStopped += StopRecordingHandler;
-        }
-
-        /// <summary>
-        /// Closes opened files and destroys the internal objects.
-        /// </summary>
-        private void Dispose()
-        {
-            RecordingStatus = ERecordingStatus.Stopped;
-            WaveIn.Dispose();
-            WaveIn = null;
-            Writer.Close();
-            Writer = null;
-        }
-
-        /// <summary>
-        /// Catches the recorded data and writes in the file.
-        /// </summary>
-        /// <param name="sender">The Event owner.</param>
-        /// <param name="e">Event args.</param>
-        private void AvailableDataHandler(object sender, WaveInEventArgs e)
-        {
-            Writer.Write(e.Buffer, 0, e.BytesRecorded);
-        }
-
-        /// <summary>
-        /// Handles the finish recording event.
-        ///
-        /// Throw Exception if there is a problem during recording.
-        /// </summary>
-        /// <param name="sender">The Event owner.</param>
-        /// <param name="e">Event args.</param>
-        private void StopRecordingHandler(object sender, StoppedEventArgs e)
-        {
-            if (RecordingStatus == ERecordingStatus.Recording)
-            {
-                RecordingStatus = ERecordingStatus.Stopped;
-            }
-
-            if (e.Exception != null)
-            {
-                throw new Exception($"ERROR: A problem was encountered during recording {e.Exception.Message}", e.Exception);
-            }
+            return _activeState.IsActive();
         }
 
         /// <summary>

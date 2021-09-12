@@ -90,6 +90,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="AudioEngine\MP3RecorderImpl\InternalData.cs" />
+    <Compile Include="AudioEngine\MP3RecorderImpl\Microphone.cs" />
+    <Compile Include="AudioEngine\MP3RecorderImpl\MP3RecorderStates.cs" />
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="ViewModel\MainWindowViewModel.cs" />
     <Page Include="View\MainWindow.xaml">
@@ -148,6 +151,7 @@
     <Resource Include="View\Assets\Record.png" />
     <Resource Include="View\Assets\Stop.png" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="packages\NAudio.Lame.2.0.0\build\NAudio.Lame.targets" Condition="Exists('packages\NAudio.Lame.2.0.0\build\NAudio.Lame.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
