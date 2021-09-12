@@ -39,6 +39,11 @@
                 </Image.Style>
             </Image>
         </Button>
+        <Popup IsOpen="{Binding Path=DeclineRecordCommand}" StaysOpen="False" PlacementTarget="{Binding ElementName=StartPauseRecording}">
+            <Border Background="LightYellow">
+                <TextBlock>Cannot start recording during the playing..</TextBlock>
+            </Border>
+        </Popup>
 
         <Button Height="25"  Width="50" HorizontalAlignment="Left" Margin="70,10,0,0" Name="ButtonPlay" VerticalAlignment="Top" Command="{Binding PlayPauseCommand}" CommandParameter="{Binding ElementName=PlayPauseButtonImage, Path=Source}" IsTabStop="False">
             <Image Name="PlayPauseButtonImage">
@@ -59,6 +64,11 @@
         <Popup IsOpen="{Binding Path=RecordingNotExists}" StaysOpen="False" PlacementTarget="{Binding ElementName=ButtonPlay}">
             <Border Background="LightYellow">
                 <TextBlock>Record not found.</TextBlock>
+            </Border>
+        </Popup>
+        <Popup IsOpen="{Binding Path=DeclinePlayCommand}" StaysOpen="False" PlacementTarget="{Binding ElementName=ButtonPlay}">
+            <Border Background="LightYellow">
+                <TextBlock>Cannot start playing during the recording.</TextBlock>
             </Border>
         </Popup>
 

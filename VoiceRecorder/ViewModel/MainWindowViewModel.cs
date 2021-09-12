@@ -72,6 +72,9 @@ namespace VoiceRecorder.ViewModel
         private bool _isRecording;
         private bool _disableRecording;
         private bool _recordingNotExists;
+        private bool _declineRecordCommand;
+        private bool _declinePlayCommand;
+
 
         /// <summary>
         /// The IsPlaying property show is now in the playing process.
@@ -87,6 +90,19 @@ namespace VoiceRecorder.ViewModel
         }
 
         /// <summary>
+        /// Determines Play command needs to reject or not?
+        /// </summary>
+        public bool DeclinePlayCommand
+        {
+            get => _declinePlayCommand;
+            set
+            {
+                _declinePlayCommand = value;
+                OnPropertyChanged(nameof(DeclinePlayCommand));
+            }
+        }
+
+        /// <summary>
         /// The IsRecording property show is now in the recording process.
         /// </summary>
         public bool IsRecording
@@ -96,6 +112,19 @@ namespace VoiceRecorder.ViewModel
             {
                 _isRecording = value;
                 OnPropertyChanged(nameof(IsRecording));
+            }
+        }
+
+        /// <summary>
+        /// Determines Record command needs to reject or not?
+        /// </summary>
+        public bool DeclineRecordCommand
+        {
+            get => _declineRecordCommand;
+            set
+            {
+                _declineRecordCommand = value;
+                OnPropertyChanged(nameof(DeclineRecordCommand));
             }
         }
 
@@ -173,6 +202,7 @@ namespace VoiceRecorder.ViewModel
         {
             PlayPauseCommand = new RelayCommand((x) =>
             {
+                DeclinePlayCommand = _disablePlaying;
                 if (_disablePlaying)
                 {
                     return;
@@ -207,6 +237,7 @@ namespace VoiceRecorder.ViewModel
 
             StartPauseRecordingCommand = new RelayCommand((x) =>
             {
+                DeclineRecordCommand = _disableRecording;
                 if (_disableRecording)
                 {
                     return;
