@@ -137,9 +137,13 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
-    <Resource Include="View\Assets\Pause.png" />
+    <Resource Include="View\Assets\PausePlayback.png" />
+    <Resource Include="View\Assets\PauseRecording.png" />
+    <Resource Include="View\Assets\ResumePlayback.png" />
+    <Resource Include="View\Assets\ResumeRecording.png" />
+  </ItemGroup>
+  <ItemGroup>
     <Resource Include="View\Assets\Play.png" />
     <Resource Include="View\Assets\Record.png" />
     <Resource Include="View\Assets\Stop.png" />

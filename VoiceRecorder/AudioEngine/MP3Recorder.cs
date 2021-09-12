@@ -48,7 +48,6 @@ namespace VoiceRecorder.AudioEngine
             Recording = 0,
             Stopped,
             Paused,
-
         };
 
         /// <summary>

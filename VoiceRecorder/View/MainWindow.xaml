@@ -28,11 +28,14 @@
                 <Image.Style>
                     <Style TargetType="{x:Type Image}">
                         <Style.Triggers>
-                            <DataTrigger Binding="{Binding IsRecording}" Value="True">
-                                <Setter Property="Source" Value="Assets/Pause.png" />
+                            <DataTrigger Binding="{Binding Path=RecordingStatus}" Value="Recording">
+                                <Setter Property="Source" Value="Assets/PauseRecording.png" />
                             </DataTrigger>
-                            <DataTrigger Binding="{Binding IsRecording}" Value="False">
-                                <Setter Property="Source" Value="Assets/Record.png" />
+                            <DataTrigger Binding="{Binding Path=RecordingStatus}" Value="Paused">
+                                <Setter Property="Source" Value="Assets/ResumeRecording.png" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Path=RecordingStatus}" Value="Stopped">
+                                <Setter Property="Source" Value="Assets/Record.png" /> 
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>
@@ -41,7 +44,7 @@
         </Button>
         <Popup IsOpen="{Binding Path=DeclineRecordCommand}" StaysOpen="False" PlacementTarget="{Binding ElementName=StartPauseRecording}">
             <Border Background="LightYellow">
-                <TextBlock>Cannot start recording during the playing..</TextBlock>
+                <TextBlock>Cannot start recording during the playing.</TextBlock>
             </Border>
         </Popup>
 
@@ -50,10 +53,13 @@
                 <Image.Style>
                     <Style TargetType="{x:Type Image}">
                         <Style.Triggers>
-                            <DataTrigger Binding="{Binding IsPlaying}" Value="True">
-                                <Setter Property="Source" Value="Assets/Pause.png" />
+                            <DataTrigger Binding="{Binding Path=PlayingStatus}" Value="Playing">
+                                <Setter Property="Source" Value="Assets/PausePlayback.png" />
                             </DataTrigger>
-                            <DataTrigger Binding="{Binding IsPlaying}" Value="False">
+                            <DataTrigger Binding="{Binding Path=PlayingStatus}" Value="Paused">
+                                <Setter Property="Source" Value="Assets/ResumePlayback.png" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Path=PlayingStatus}" Value="Stopped">
                                 <Setter Property="Source" Value="Assets/Play.png" />
                             </DataTrigger>
                         </Style.Triggers>

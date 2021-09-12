@@ -64,28 +64,59 @@ namespace VoiceRecorder.ViewModel
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
+        /// <summary>
+        /// The enum ERecordingStatus describes the recorder status.
+        /// </summary>
+        public enum ERecordingStatus
+        {
+            Recording = 0,
+            Paused,
+            Stopped,
+        };
+
+        /// <summary>
+        /// The enum EPlayStatus describes the player status.
+        /// </summary>
+        public enum EPlayStatus
+        {
+            Playing = 0,
+            Paused,
+            Stopped,
+        };
+
         private readonly ApplicationModel _applicationModel;
         private readonly string _fileName = "tmp_audio.mp3";
 
-        private bool _isPlaying;
-        private bool _disablePlaying;
-        private bool _isRecording;
-        private bool _disableRecording;
+
+        private EPlayStatus _ePlayStatus;
+        private ERecordingStatus _eRecordingStatus;
         private bool _recordingNotExists;
         private bool _declineRecordCommand;
         private bool _declinePlayCommand;
 
-
         /// <summary>
-        /// The IsPlaying property show is now in the playing process.
+        /// Determines the Playing status.
         /// </summary>
-        public bool IsPlaying
+        public EPlayStatus PlayingStatus
         {
-            get => _isPlaying;
+            get => _ePlayStatus;
             set
             {
-                _isPlaying = value;
-                OnPropertyChanged(nameof(IsPlaying));
+                _ePlayStatus = value;
+                OnPropertyChanged(nameof(PlayingStatus));
+            }
+        }
+
+        /// <summary>
+        /// Determines the Recording status.
+        /// </summary>
+        public ERecordingStatus RecordingStatus
+        {
+            get => _eRecordingStatus;
+            set
+            {
+                _eRecordingStatus = value;
+                OnPropertyChanged(nameof(RecordingStatus));
             }
         }
 
@@ -99,19 +130,6 @@ namespace VoiceRecorder.ViewModel
             {
                 _declinePlayCommand = value;
                 OnPropertyChanged(nameof(DeclinePlayCommand));
-            }
-        }
-
-        /// <summary>
-        /// The IsRecording property show is now in the recording process.
-        /// </summary>
-        public bool IsRecording
-        {
-            get => _isRecording;
-            set
-            {
-                _isRecording = value;
-                OnPropertyChanged(nameof(IsRecording));
             }
         }
 
@@ -189,8 +207,8 @@ namespace VoiceRecorder.ViewModel
         {
             _applicationModel = new ApplicationModel(new MP3Recorder(), new MP3Player());
 
-            IsPlaying = false;
-            IsRecording = false;
+            PlayingStatus = EPlayStatus.Stopped;
+            RecordingStatus = ERecordingStatus.Stopped;
             _recordingNotExists = false;
             InitCommands();
         }
@@ -202,20 +220,21 @@ namespace VoiceRecorder.ViewModel
         {
             PlayPauseCommand = new RelayCommand((x) =>
             {
-                DeclinePlayCommand = _disablePlaying;
-                if (_disablePlaying)
+                DeclinePlayCommand = RecordingStatus != ERecordingStatus.Stopped;
+                if (DeclinePlayCommand)
                 {
                     return;
                 }
 
-                if (IsPlaying)
+                switch (PlayingStatus)
                 {
-                    _applicationModel.PausePlaying();
-                }
-                else
-                {
-                    if (!_applicationModel.Player.IsActive())
-                    {
+                    case EPlayStatus.Playing:
+                        _applicationModel.PausePlaying();
+                        PlayingStatus = EPlayStatus.Paused;
+                        return;
+                    case EPlayStatus.Paused:
+                        break;
+                    case EPlayStatus.Stopped:
                         if (!File.Exists(_fileName))
                         {
                             RecordingNotExists = true;
@@ -224,40 +243,41 @@ namespace VoiceRecorder.ViewModel
                         _applicationModel.Player.FileName = _fileName;
                         _applicationModel.Player.PlayingStoppedEvent += (owner, args) =>
                         {
-                            IsPlaying = false;
-                            _disableRecording = false;
+                            PlayingStatus = EPlayStatus.Stopped;
                         };
-                        _disableRecording = true;
-                    }
-                    _applicationModel.PlayRecord();
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
                 }
-
-                IsPlaying = !IsPlaying;
+                _applicationModel.PlayRecord();
+                PlayingStatus = EPlayStatus.Playing;
             });
 
             StartPauseRecordingCommand = new RelayCommand((x) =>
             {
-                DeclineRecordCommand = _disableRecording;
-                if (_disableRecording)
+                DeclineRecordCommand = PlayingStatus != EPlayStatus.Stopped;
+                if (DeclineRecordCommand)
                 {
                     return;
                 }
 
-                if (IsRecording)
+                switch (RecordingStatus)
                 {
-                    _applicationModel.PauseRecording();
-                }
-                else
-                {
-                    if (!_applicationModel.Recorder.IsActive())
-                    {
+                    case ERecordingStatus.Recording:
+                        _applicationModel.PauseRecording();
+                        RecordingStatus = ERecordingStatus.Paused;
+                        return;
+                    case ERecordingStatus.Paused:
+                        break;
+                    case ERecordingStatus.Stopped:
                         _applicationModel.Recorder.OutFileName = _fileName;
-                    }
-                    _applicationModel.StartRecording();
-                    _disablePlaying = true;
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
                 }
 
-                IsRecording = !IsRecording;
+                _applicationModel.StartRecording();
+                RecordingStatus = ERecordingStatus.Recording;
             });
 
             StopCommand = new RelayCommand((x) =>
@@ -265,8 +285,7 @@ namespace VoiceRecorder.ViewModel
                 if (_applicationModel.Player.IsActive())
                 {
                     _applicationModel.StopPlaying();
-                    IsPlaying = false;
-                    _disableRecording = false;
+                    PlayingStatus = EPlayStatus.Stopped;
                     return;
                 }
 
@@ -274,8 +293,7 @@ namespace VoiceRecorder.ViewModel
                 {
                     _applicationModel.StopRecording();
 
-                    IsRecording = false;
-                    _disablePlaying = false;
+                    RecordingStatus = ERecordingStatus.Stopped;
                 }
             });
         }
