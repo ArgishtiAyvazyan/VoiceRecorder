@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using VoiceRecorder.Annotations;
@@ -70,6 +71,7 @@ namespace VoiceRecorder.ViewModel
         private bool _disablePlaying;
         private bool _isRecording;
         private bool _disableRecording;
+        private bool _recordingNotExists;
 
         /// <summary>
         /// The IsPlaying property show is now in the playing process.
@@ -94,6 +96,19 @@ namespace VoiceRecorder.ViewModel
             {
                 _isRecording = value;
                 OnPropertyChanged(nameof(IsRecording));
+            }
+        }
+
+        /// <summary>
+        /// Determines record is exists or not?
+        /// </summary>
+        public bool RecordingNotExists
+        {
+            get => _recordingNotExists;
+            set
+            {
+                _recordingNotExists = value;
+                OnPropertyChanged(nameof(RecordingNotExists));
             }
         }
 
@@ -147,6 +162,7 @@ namespace VoiceRecorder.ViewModel
 
             IsPlaying = false;
             IsRecording = false;
+            _recordingNotExists = false;
             InitCommands();
         }
 
@@ -170,6 +186,11 @@ namespace VoiceRecorder.ViewModel
                 {
                     if (!_applicationModel.Player.IsActive())
                     {
+                        if (!File.Exists(_fileName))
+                        {
+                            RecordingNotExists = true;
+                            return;
+                        }
                         _applicationModel.Player.FileName = _fileName;
                         _applicationModel.Player.PlayingStoppedEvent += (owner, args) =>
                         {

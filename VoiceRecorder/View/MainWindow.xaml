@@ -40,7 +40,7 @@
             </Image>
         </Button>
 
-        <Button Height="25"  Width="50" HorizontalAlignment="Left" Margin="70,10,0,0" Name="ButtonPlay" VerticalAlignment="Top" Command="{Binding PlayPauseCommand}" CommandParameter="{Binding ElementName=PlayPauseButtonImage, Path=Source}" >
+        <Button Height="25"  Width="50" HorizontalAlignment="Left" Margin="70,10,0,0" Name="ButtonPlay" VerticalAlignment="Top" Command="{Binding PlayPauseCommand}" CommandParameter="{Binding ElementName=PlayPauseButtonImage, Path=Source}" IsTabStop="False">
             <Image Name="PlayPauseButtonImage">
                 <Image.Style>
                     <Style TargetType="{x:Type Image}">
@@ -56,6 +56,11 @@
                 </Image.Style>
             </Image>
         </Button>
+        <Popup IsOpen="{Binding Path=RecordingNotExists}" StaysOpen="False" PlacementTarget="{Binding ElementName=ButtonPlay}">
+            <Border Background="LightYellow">
+                <TextBlock>Record not found.</TextBlock>
+            </Border>
+        </Popup>
 
         <Button Height="25"  Width="50" HorizontalAlignment="Left" Margin="130,10,0,0" Name="ButtonStop" VerticalAlignment="Top" Command="{Binding StopCommand}" CommandParameter="{Binding ElementName=StopButtonImage, Path=Source}" >
             <Image Name="StopButtonImage">
